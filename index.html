@@ -180,6 +180,7 @@ header{
   <div class="modal-content">
     <div class="close" onclick="closeImg()">✖</div>
     <img id="img">
+    <div id="imgDesc" style="margin-top:12px;font-size:14px;line-height:1.4;color:#444"></div>
   </div>
 </div>
 
@@ -334,7 +335,7 @@ function render(){
     const d = document.createElement("div");
     d.className="product";
     d.innerHTML=`
-      <div class="icon" onclick="showImg('${p.imagen||""}')">📦</div>
+      <div class="icon" onclick="showImg('${p.imagen||""}', \`${p.descripcion||""}\`)">📦</div>
       <div class="info">
         <div class="title">${p.titulo}</div>
         <div class="price">
@@ -451,7 +452,13 @@ function toggleCart(){
 }
 
 // ================= IMAGEN =================
-function showImg(u){ if(u){ img.src=u; imgModal.style.display="flex"; } }
+function showImg(url, descripcion){
+  if(url){
+    img.src = url;
+    document.getElementById("imgDesc").textContent = descripcion || "";
+    imgModal.style.display = "flex";
+  }
+}
 function closeImg(){ imgModal.style.display="none"; }
 
 function generarPedido(btn){
@@ -533,4 +540,5 @@ ${pdfUrl}`
 
 </body>
 </html>
+
 
