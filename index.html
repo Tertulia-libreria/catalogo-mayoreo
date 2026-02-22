@@ -22,11 +22,16 @@ header{background:#0b5ed7;color:#fff;padding:12px;display:flex;gap:12px;align-it
 
 .menu{
   display:none;
-  background:#fff;
-  border-bottom:1px solid #ddd;
-  position:sticky;
+  position:absolute;
   top:56px;
-  z-index:1600; /* 🔥 encima del buscador */
+  left:10px;
+  width:260px;
+  max-height:70vh;
+  overflow-y:auto;
+  background:#fff;
+  border-radius:8px;
+  box-shadow:0 10px 25px rgba(0,0,0,.2);
+  z-index:3000;
 }
 .menu div{padding:12px;border-bottom:1px solid #eee;cursor:pointer}
 .menu div:hover{background:#f0f4ff}
@@ -203,6 +208,10 @@ const API_FOLIO = "https://script.google.com/macros/s/AKfycbzb-pfY9TXRB0PzPstVTZ
 let productos=[],categoria="TODOS";
 let carrito=JSON.parse(localStorage.getItem("carrito")||"{}");
 let NIVEL_CLIENTE = 0;
+let CLIENTE_NOMBRE = "";
+let CLIENTE_NEGOCIO = "";
+let CLIENTE_DIRECCION = "";
+let CLIENTE_TELEFONO = "";
 
 // ===== DESCUENTOS POR VOLUMEN =====
 const DESCUENTOS_VOLUMEN = [
@@ -239,11 +248,18 @@ function login(){
     document.getElementById("loginLoader").style.display = "none";
 
     if(res.ok){
-      NIVEL_CLIENTE = parseInt(res.cliente.nivel) || 0;
-      document.getElementById("loginModal").style.display = "none";
-      render();
-      updateCart();
-    } else {
+
+  NIVEL_CLIENTE = parseInt(res.cliente.nivel) || 0;
+
+  CLIENTE_NOMBRE = res.cliente.nombre || "";
+  CLIENTE_NEGOCIO = res.cliente.negocio || "";
+  CLIENTE_DIRECCION = res.cliente.direccion || "";
+  CLIENTE_TELEFONO = res.cliente.telefono || "";
+
+  document.getElementById("loginModal").style.display = "none";
+  render();
+  updateCart();
+}else {
       loginMsg.textContent = "❌ " + res.error;
       loginMsg.style.color = "red";
     }
@@ -271,9 +287,17 @@ fetch(URL_JSON)
     }
 
     const noLibro = [
-      "rompecabezas","juguetes","otros productos",
-      "juegos de mesa","pistolas hidrogel","segunda mano"
-    ];
+  "rompecabezas",
+  "juguetes",
+  "otros productos",
+  "juegos de mesa",
+  "pistolas hidrogel",
+  "segunda mano",
+  "personajes sobres",
+  "legos",
+  "sombras de barro",
+  "tarjetas de poder"
+];
 
     productos = d.libros.map(p => ({
       ...p,
@@ -294,21 +318,87 @@ function toggleMenu(){
 }
 
 function menuCategorias(){
-  menu.innerHTML="";
-  ["TODOS","LIBROS"].forEach(c=>{
-    const d=document.createElement("div");
-    d.textContent=c;
-    d.onclick=()=>{categoria=c;render();toggleMenu()};
-    menu.appendChild(d);
-  });
-  [...new Set(productos.filter(p=>!p.esLibro).map(p=>p.categoria))].forEach(c=>{
-    const d=document.createElement("div");
-    d.textContent=c;
-    d.onclick=()=>{categoria=c;render();toggleMenu()};
-    menu.appendChild(d);
-  });
-}
+  menu.innerHTML = "";
 
+  // 🔹 TODOS
+  const todos = document.createElement("div");
+  todos.textContent = "TODOS";
+  todos.onclick = ()=>{
+    categoria="TODOS";
+    render();
+    toggleMenu();
+  };
+  menu.appendChild(todos);
+
+  // ================= LIBROS (DESPLEGABLE REAL) =================
+  const librosHeader = document.createElement("div");
+  librosHeader.innerHTML = "📚 LIBROS <span id='arrowLibros'>▼</span>";
+  librosHeader.style.fontWeight = "bold";
+  librosHeader.style.background = "#f5f7ff";
+  librosHeader.style.cursor = "pointer";
+  menu.appendChild(librosHeader);
+
+  const contenedorLibros = document.createElement("div");
+  contenedorLibros.style.display = "none";
+  contenedorLibros.style.background = "#fafafa";
+  menu.appendChild(contenedorLibros);
+
+  librosHeader.onclick = ()=>{
+  const abierto = contenedorLibros.style.display === "block";
+
+  contenedorLibros.style.display = abierto ? "none" : "block";
+
+  document.getElementById("arrowLibros").textContent = abierto ? "▼" : "▲";
+};
+
+  const categoriasLibros = [
+    ...new Set(
+      productos
+        .filter(p => p.esLibro)
+        .map(p => p.categoria)
+    )
+  ].sort();
+
+  categoriasLibros.forEach(cat=>{
+    const d = document.createElement("div");
+    d.textContent = "   " + cat;
+    d.onclick = ()=>{
+      categoria = cat;
+      render();
+      toggleMenu();
+    };
+    contenedorLibros.appendChild(d);
+  });
+
+  // ================= OTRAS =================
+  const otras = [
+    ...new Set(
+      productos
+        .filter(p => !p.esLibro)
+        .map(p => p.categoria)
+    )
+  ].sort();
+
+  if(otras.length){
+
+    const otrosTitulo = document.createElement("div");
+    otrosTitulo.textContent = "OTROS"; // 🔥 quitamos icono
+    otrosTitulo.style.fontWeight = "bold";
+    otrosTitulo.style.background = "#f5f7ff";
+    menu.appendChild(otrosTitulo);
+
+    otras.forEach(cat=>{
+      const d = document.createElement("div");
+      d.textContent = "   " + cat;
+      d.onclick = ()=>{
+        categoria = cat;
+        render();
+        toggleMenu();
+      };
+      menu.appendChild(d);
+    });
+  }
+}
 function render(){
   const q = document.getElementById("q").value.toLowerCase();
   lista.innerHTML = "";
@@ -493,7 +583,10 @@ function generarPedido(btn){
   form.append("descuento", montoDesc);
   form.append("total", totalFinal);
   form.append("items", JSON.stringify(items));
-
+form.append("clienteNombre", CLIENTE_NOMBRE);
+form.append("clienteNegocio", CLIENTE_NEGOCIO);
+form.append("clienteDireccion", CLIENTE_DIRECCION);
+form.append("clienteTelefono", CLIENTE_TELEFONO);
   fetch(API_FOLIO, {
     method: "POST",
     body: form
@@ -540,5 +633,6 @@ ${pdfUrl}`
 
 </body>
 </html>
+
 
 
