@@ -22,7 +22,7 @@ header{background:#0b5ed7;color:#fff;padding:12px;display:flex;gap:12px;align-it
 
 .menu{
   display:none;
-  position:absolute;
+  position:fixed;
   top:56px;
   left:10px;
   width:260px;
@@ -86,21 +86,57 @@ align-items:center;justify-content:center;z-index:4000}
 }
 
 /* CARRITO */
-.cart-panel{
-  position:fixed;top:0;right:0;
-  width:340px;height:100vh;
-  background:#fff;
-  box-shadow:-4px 0 10px rgba(0,0,0,.25);
-  display:none;flex-direction:column;z-index:3000;
+.cart-panel {
+  display: none; /* Oculta el carrito por defecto */
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100%; /* Ajustar a pantalla completa */
+  height: 100vh;
+  background: #fff;
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  z-index: 3000;
+  overflow-y: auto; /* Permite desplazarse si el contenido es largo */
 }
-.cart-header{
-  padding:15px;border-bottom:1px solid #ddd;
-  display:flex;justify-content:space-between;font-weight:bold
+
+.cart-header {
+  padding: 15px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
 }
-.cart-body{padding:15px;flex:1;overflow-y:auto}
-.cart-item{font-size:14px;margin-bottom:8px}
-.cart-item button{border:none;background:none;color:red;cursor:pointer}
-.cart-total{padding:15px;border-top:1px solid #ddd;background:#fafafa}
+
+.cart-body {
+  padding: 15px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.cart-total {
+  padding: 15px;
+  border-top: 1px solid #ddd;
+  background: #fafafa;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  box-sizing: border-box; /* Asegura que el tamaño esté bien calculado */
+}
+
+#btnPedido {
+  width: 100%;
+  padding: 12px;
+  background: #198754;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+}
 header{
   position:sticky;
   top:0;
@@ -156,7 +192,7 @@ header{
 </div>
 
 <div id="loginMsg" style="margin-top:10px;font-weight:bold"></div>
-   <p style="text-align:center; font-size:14px; margin-top:10px;">
+<p style="text-align:center; font-size:14px; margin-top:10px;">
   ¡Accede a precios especiales por ser mayorista! Solo envía un mensaje por WhatsApp al 
   <strong>475 107 0540</strong> y te enviaremos tu usuario y contraseña.
 </p>
@@ -370,6 +406,7 @@ function menuCategorias(){
       categoria = cat;
       render();
       toggleMenu();
+      window.scrollTo(0, 0);
     };
     contenedorLibros.appendChild(d);
   });
@@ -632,7 +669,10 @@ ${pdfUrl}`
 
   window.open(`https://wa.me/${telefono}?text=${mensaje}`, "_blank");
 }
-
+window.onload = function() {
+  const cartPanel = document.getElementById("cartPanel");
+  cartPanel.style.display = "none"; // Asegura que el carrito esté oculto al cargar la página
+};
 </script>
 
 </body>
