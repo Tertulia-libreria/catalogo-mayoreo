@@ -667,8 +667,13 @@ Acabo de generar un pedido mayorista.
 ${pdfUrl}`
   );
 
-  window.open(`https://wa.me/${telefono}?text=${mensaje}`, "_blank");
+  const enlace = `https://wa.me/${telefono}?text=${mensaje}`;
+if (window.innerWidth <= 800) {
+  window.location.href = enlace;
+} else {
+  window.open(enlace, "_blank");
 }
+
 window.onload = function() {
   const cartPanel = document.getElementById("cartPanel");
   cartPanel.style.display = "none"; // Asegura que el carrito esté oculto al cargar la página
